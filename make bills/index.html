@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Make Bills</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <!-- Page header -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">
+        <img src="logo.png" alt="">
+      </span>
+      <span>Make Bills</span>
+    </div>
+    <nav class="top-menu" aria-label="Main menu">
+      <button class="menu-link active" type="button" data-page="home-page" aria-current="page">Home</button>
+      <button class="menu-link" type="button" data-page="saved-page">Saved</button>
+      <button class="menu-link" type="button" data-page="services-page">Services</button>
+      <button class="menu-link" type="button" data-page="about-page">About Us</button>
+    </nav>
+    <button class="button button-primary home-only" id="print-button" type="button">
+      <span aria-hidden="true">↗</span> Print / Save PDF
+    </button>
+  </header>
+
+  <p class="storage-message" id="storage-message" role="status" aria-live="polite"></p>
+
+  <main>
+    <!-- Home: invoice editor and live preview -->
+    <section class="page-view" id="home-page">
+      <div class="workspace">
+    <section class="editor" aria-labelledby="editor-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">YOUR DOCUMENT</p>
+          <h1 id="editor-heading">Create an invoice</h1>
+        </div>
+        <div class="invoice-actions">
+          <button class="button button-light" id="new-invoice" type="button">New invoice</button>
+          <button class="button button-primary" id="save-invoice" type="button">Save invoice</button>
+        </div>
+      </div>
+
+      <!-- Enter invoice details here -->
+      <form id="invoice-form">
+        <section class="form-section" id="invoice-details">
+          <h2>Invoice details</h2>
+          <div class="form-grid">
+            <label>
+              Invoice number
+              <input id="invoice-number" type="text" value="INV-001">
+            </label>
+            <label>
+              Currency
+              <select id="currency">
+                <option value="INR" selected>INR (₹)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="CAD">CAD ($)</option>
+                <option value="AUD">AUD ($)</option>
+              </select>
+            </label>
+            <label>
+              Issue date
+              <input id="issue-date" type="date">
+            </label>
+            <label>
+              Due date
+              <input id="due-date" type="date">
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section" id="from-section">
+          <h2>From</h2>
+          <div class="form-grid">
+            <label>
+              Your name or business
+              <input id="from-name" type="text" placeholder="Your business name">
+            </label>
+            <label>
+              Email
+              <input id="from-email" type="email" placeholder="you@example.com">
+            </label>
+            <label>
+              Business GSTIN
+              <input id="from-gstin" type="text" placeholder="15-character GSTIN" maxlength="15">
+            </label>
+            <div class="full-width logo-upload">
+              <label for="business-logo-upload">Business logo</label>
+              <input id="business-logo-upload" type="file" accept="image/*">
+              <button class="button button-light remove-logo-button" id="remove-logo" type="button" hidden>
+                Remove selected logo
+              </button>
+            </div>
+            <label class="full-width">
+              Address
+              <textarea id="from-address" rows="2" placeholder="Street address, city, country"></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section" id="bill-to-section">
+          <h2>Bill to</h2>
+          <div class="form-grid">
+            <div class="full-width customer-controls">
+              <label for="saved-customers">Remembered customers</label>
+              <div>
+                <select id="saved-customers">
+                  <option value="">Choose a saved customer</option>
+                </select>
+                <button class="button button-light" id="save-customer" type="button">Save customer</button>
+              </div>
+            </div>
+            <label>
+              Client name
+              <input id="to-name" type="text" placeholder="Client or business name">
+            </label>
+            <label>
+              Email
+              <input id="to-email" type="email" placeholder="client@example.com">
+            </label>
+            <label class="full-width">
+              Address
+              <textarea id="to-address" rows="2" placeholder="Street address, city, country"></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section items-section" id="items-section">
+          <div class="section-title-row">
+            <h2>Items</h2>
+            <button class="button button-light" id="add-item" type="button">＋ Add item</button>
+          </div>
+          <div class="item-editor-head" aria-hidden="true">
+            <span>Description</span>
+            <span>Qty</span>
+            <span>Rate</span>
+            <span></span>
+          </div>
+          <div id="item-list" class="item-list"></div>
+        </section>
+
+        <section class="form-section" id="additional-details">
+          <h2>Additional details</h2>
+          <div class="form-grid">
+            <label>
+              Tax (%)
+              <input id="tax-rate" type="number" min="0" step="0.01" value="0">
+            </label>
+            <label class="full-width">
+              Notes
+              <textarea id="notes" rows="3" placeholder="Payment instructions or a thank-you message"></textarea>
+            </label>
+          </div>
+        </section>
+      </form>
+    </section>
+
+    <aside class="preview-column" id="preview" aria-label="Invoice preview">
+      <div class="preview-label">
+        <span>LIVE PREVIEW</span>
+        <span class="preview-hint">Updates as you type</span>
+      </div>
+      <article class="invoice-paper">
+        <div class="invoice-top">
+          <div>
+            <img class="business-logo" id="preview-business-logo" alt="Business logo" hidden>
+            <div class="preview-logo">INVOICE</div>
+            <div class="preview-number" id="preview-number">INV-001</div>
+          </div>
+          <div class="from-preview">
+            <strong id="preview-from-name">Your business name</strong>
+            <span id="preview-from-email"></span>
+            <span id="preview-from-gstin"></span>
+            <span id="preview-from-address"></span>
+          </div>
+        </div>
+
+        <div class="invoice-meta">
+          <div>
+            <span class="meta-label">BILL TO</span>
+            <strong id="preview-to-name">Client name</strong>
+            <span id="preview-to-email"></span>
+            <span id="preview-to-address"></span>
+          </div>
+          <div class="dates">
+            <div><span class="meta-label">ISSUED</span><strong id="preview-issue-date">—</strong></div>
+            <div><span class="meta-label">DUE</span><strong id="preview-due-date">—</strong></div>
+          </div>
+        </div>
+
+        <div class="preview-items">
+          <div class="preview-table-head">
+            <span>DESCRIPTION</span>
+            <span>QTY</span>
+            <span>RATE</span>
+            <span>AMOUNT</span>
+          </div>
+          <div id="preview-items-list"></div>
+        </div>
+
+        <div class="totals">
+          <div><span>Subtotal</span><strong id="preview-subtotal">$0.00</strong></div>
+          <div><span id="preview-tax-label">Tax (0%)</span><strong id="preview-tax">$0.00</strong></div>
+          <div class="grand-total"><span>Total</span><strong id="preview-total">$0.00</strong></div>
+        </div>
+
+        <div class="invoice-note" id="preview-notes-wrap">
+          <span class="meta-label">NOTE</span>
+          <p id="preview-notes"></p>
+        </div>
+        <div class="paper-footer">Thank you for your business.</div>
+      </article>
+      <div class="preview-actions">
+        <button class="button button-primary home-only" id="print-button-bottom" type="button">
+          Print / Save PDF
+        </button>
+      </div>
+    </aside>
+      </div>
+    </section>
+
+    <!-- Saved: every stored invoice can be reopened or removed -->
+    <section class="page-view content-page" id="saved-page" hidden>
+      <p class="eyebrow">YOUR DOCUMENTS</p>
+      <h1>Saved invoices</h1>
+      <p class="page-intro">Open a saved invoice to continue editing, or remove invoices you no longer need.</p>
+      <div class="saved-invoice-list" id="saved-invoice-list"></div>
+    </section>
+
+    <!-- Services: replace the example text with your own service information -->
+    <section class="page-view content-page" id="services-page" hidden>
+      <p class="eyebrow">WHAT WE DO</p>
+      <h1>Our services</h1>
+      <p class="page-intro">A quick look at what we offer.</p>
+      <div class="service-grid">
+        <article class="service-card">
+          <h2>PDF Converter.</h2>
+          <p>I have Created a PDF Converter that allows users to easily convert their documents into PDF format.</p>
+          <!-- Replace # with the service URL when ready. -->
+          <a class="button button-primary service-link" href="https://1st-website-kappa.vercel.app/">Visit site</a>
+        </article>
+      </div>
+    </section>
+
+    <!-- About Us: replace the example paragraph, image, and profile link -->
+    <section class="page-view content-page" id="about-page" hidden>
+      <p class="eyebrow">GET TO KNOW US</p>
+      <h1>About us</h1>
+      <div class="about-card">
+        <div class="about-image-wrap">
+          <img class="about-image" src="profile.jpeg" alt="Toman's profile photo">
+        </div>
+        <div class="about-details">
+          <h2>Hi Toman here...</h2>
+          <p>BCA student who enjoys building websites, learning new technologies, and turning ideas into simple, useful digital experiences.
+
+I’m currently focused on improving my skills in HTML, CSS, JavaScript, and web development, while exploring new areas of technology and AI.
+
+I believe in learning by building — one project, one idea, and one line of code at a time.</p>
+          <!-- Replace # with your profile URL when you are ready. -->
+          <a class="button button-primary profile-link" href="https://www.linkedin.com/in/akhand-singh-4a7267360/">Visit my profile</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
